@@ -1,0 +1,81 @@
+
+D:\JDK8_64\Redis-3.2.100-Windows-32\Redis>redis-server redis.26380.conf --sentinel
+[10368] 04 Apr 21:55:58.549 # Warning: 32 bit instance detected but no memory limit set. Setting 3 GB maxmemory limit with 'noeviction' policy now.
+                _._
+           _.-``__ ''-._
+      _.-``    `.  `_.  ''-._           Redis 3.0.504 (00000000/0) 32 bit
+  .-`` .-```.  ```\/    _.,_ ''-._
+ (    '      ,       .-`  | `,    )     Running in sentinel mode
+ |`-._`-...-` __...-.``-._|'` _.-'|     Port: 26380
+ |    `-._   `._    /     _.-'    |     PID: 10368
+  `-._    `-._  `-./  _.-'    _.-'
+ |`-._`-._    `-.__.-'    _.-'_.-'|
+ |    `-._`-._        _.-'_.-'    |           http://redis.io
+  `-._    `-._`-.__.-'_.-'    _.-'
+ |`-._`-._    `-.__.-'    _.-'_.-'|
+ |    `-._`-._        _.-'_.-'    |
+  `-._    `-._`-.__.-'_.-'    _.-'
+      `-._    `-.__.-'    _.-'
+          `-._        _.-'
+              `-.__.-'
+
+[10368] 04 Apr 21:55:58.550 # Sentinel runid is b45996448319331fbd1d750441f211732267de92
+[10368] 04 Apr 21:55:58.551 # +monitor master mymaster 127.0.0.1 6379 quorum 1
+[10368] 04 Apr 21:55:59.551 * Connecting to MASTER 127.0.0.1:6379
+[10368] 04 Apr 21:55:59.551 * MASTER <-> SLAVE sync started
+[10368] 04 Apr 21:55:59.554 * Non blocking connect for SYNC fired the event.
+[10368] 04 Apr 21:55:59.557 * Master replied to PING, replication can continue...
+[10368] 04 Apr 21:55:59.557 * +slave slave 127.0.0.1:6381 127.0.0.1 6381 @ mymaster 127.0.0.1 6379
+[10368] 04 Apr 21:55:59.559 * +slave slave 127.0.0.1:6380 127.0.0.1 6380 @ mymaster 127.0.0.1 6379
+[10368] 04 Apr 21:55:59.561 * Partial resynchronization not possible (no cached master)
+[10368] 04 Apr 21:55:59.575 * Full resync from master: 6627a5009c9099171d91e528241c341b85488c72:785
+[10368] 04 Apr 21:55:59.813 * MASTER <-> SLAVE sync: receiving 18 bytes from master
+[10368] 04 Apr 21:55:59.815 * MASTER <-> SLAVE sync: Flushing old data
+[10368] 04 Apr 21:55:59.819 * MASTER <-> SLAVE sync: Loading DB in memory
+[10368] 04 Apr 21:55:59.820 * MASTER <-> SLAVE sync: Finished with success
+[10368] 04 Apr 21:56:00.668 * +sentinel sentinel 127.0.0.1:26380 127.0.0.1 26380 @ mymaster 127.0.0.1 6379
+[10368] 04 Apr 21:56:09.597 * +slave slave 127.0.0.1:26380 127.0.0.1 26380 @ mymaster 127.0.0.1 6379
+
+挂掉主节点
+[10368] 04 Apr 22:04:24.321 # Connection with master lost.
+[10368] 04 Apr 22:04:24.321 * Caching the disconnected master state.
+[10368] 04 Apr 22:04:52.346 * Connecting to MASTER 127.0.0.1:6379
+[10368] 04 Apr 22:04:52.347 * MASTER <-> SLAVE sync started
+[10368] 04 Apr 22:04:54.349 * Non blocking connect for SYNC fired the event.
+[10368] 04 Apr 22:04:54.349 # Sending command to master in replication handshake: -Writing to master: Unknown error
+
+主观下线
+[10368] 04 Apr 22:04:54.376 # +sdown master mymaster 127.0.0.1 6379
+
+客观下线
+[10368] 04 Apr 22:04:54.376 # +odown master mymaster 127.0.0.1 6379 #quorum 1/1
+
+进入新纪元epoch+1
+[10368] 04 Apr 22:04:54.381 # +new-epoch 1
+[10368] 04 Apr 22:04:54.381 # +try-failover master mymaster 127.0.0.1 6379
+
+选举master
+[10368] 04 Apr 22:04:54.386 # +vote-for-leader b45996448319331fbd1d750441f211732267de92 1
+[10368] 04 Apr 22:04:54.387 # 127.0.0.1:26380 voted for b45996448319331fbd1d750441f211732267de92 1
+[10368] 04 Apr 22:04:54.470 # +elected-leader master mymaster 127.0.0.1 6379
+
+failover
+[10368] 04 Apr 22:04:54.470 # +failover-state-select-slave master mymaster 127.0.0.1 6379
+[10368] 04 Apr 22:04:54.542 # +selected-slave slave 127.0.0.1:6380 127.0.0.1 6380 @ mymaster 127.0.0.1 6379
+[10368] 04 Apr 22:04:54.542 * +failover-state-send-slaveof-noone slave 127.0.0.1:6380 127.0.0.1 6380 @ mymaster 127.0.0.1 6379
+[10368] 04 Apr 22:04:54.628 * +failover-state-wait-promotion slave 127.0.0.1:6380 127.0.0.1 6380 @ mymaster 127.0.0.1 6379
+[10368] 04 Apr 22:04:54.935 * Connecting to MASTER 127.0.0.1:6379
+[10368] 04 Apr 22:04:54.935 * MASTER <-> SLAVE sync started
+[10368] 04 Apr 22:04:55.447 # +promoted-slave slave 127.0.0.1:6380 127.0.0.1 6380 @ mymaster 127.0.0.1 6379
+[10368] 04 Apr 22:04:55.447 # +failover-state-reconf-slaves master mymaster 127.0.0.1 6379
+[10368] 04 Apr 22:04:55.536 * +slave-reconf-sent slave 127.0.0.1:26380 127.0.0.1 26380 @ mymaster 127.0.0.1 6379
+[10368] 04 Apr 22:07:55.480 # +failover-end-for-timeout master mymaster 127.0.0.1 6379
+[10368] 04 Apr 22:07:55.480 # +failover-end master mymaster 127.0.0.1 6379
+[10368] 04 Apr 22:07:55.483 * +slave-reconf-sent-be slave 127.0.0.1:6380 127.0.0.1 6380 @ mymaster 127.0.0.1 6379
+[10368] 04 Apr 22:07:55.484 * +slave-reconf-sent-be slave 127.0.0.1:6381 127.0.0.1 6381 @ mymaster 127.0.0.1 6379
+
+选出新主，slaveof到新主
+[10368] 04 Apr 22:07:55.484 # +switch-master mymaster 127.0.0.1 6379 127.0.0.1 6380
+[10368] 04 Apr 22:07:55.487 * +slave slave 127.0.0.1:26380 127.0.0.1 26380 @ mymaster 127.0.0.1 6380
+[10368] 04 Apr 22:07:55.489 * +slave slave 127.0.0.1:6381 127.0.0.1 6381 @ mymaster 127.0.0.1 6380
+[10368] 04 Apr 22:07:55.495 * +slave slave 127.0.0.1:6379 127.0.0.1 6379 @ mymaster 127.0.0.1 6380
