@@ -1,0 +1,84 @@
+
+### 1.RDB(Redis DataBase)
+
+####    快照
+            fork进程->dump.rdb.temp->覆盖dump.rdb
+####    触发：
+        https://www.jianshu.com/p/b821acded5b3
+
+        (1)手动、主从复制调用bgsave【fork进程,不会阻塞】
+        (2)save【阻塞】
+        (3)shutdown
+        (4)时钟：
+            save m n 在m时间内达到n条就会触发保存。
+            save 900 1 1/900
+            save 300 10 10/300
+            save 60 10000 10000/60
+            {
+                serverCron是Redis服务器的周期性操作函数，默认每隔100ms执行一次；该函数对服务器的状态进行维护，
+                其中一项工作就是检查 save m n 配置的条件是否满足，如果满足就执行bgsave。
+
+                dirty计数器：数据修改次数
+
+                lastsave时间戳：最近修改时间
+                每隔100ms，执行serverCron函数；在serverCron函数中，遍历save m n配置的保存条件，只要有一个条件满足，就进行bgsave。对于每一个save m n条件，只有下面两条同时满足时才算满足：
+
+                周期 serverCron,检查当前时间-lastsave > m &&  dirty >= n
+               
+            }
+#### 缺点：
+    同步时间较长,丢失数据多。
+
+#### 数据恢复    
+    config get dir
+    appendonly no
+    dbfilename dump.rdb
+    dir /var/lib/redis
+
+    appendonly 设置成no，redis启动时会把/var/lib/redis 目录下的dump.rdb 中的数据恢复。dir 和dbfilename 都可以设置。我测试时appendonly 设置成yes 时候不会将dump.rdb文件中的数据恢复。
+
+
+2.AOF(append-only file)
+    增量同步
+
+    命令写入->【append】AOF缓冲->【sync】写入aof文件->【rewrite】aof文件->覆盖文件
+
+（1）redis fork一个子进程
+
+（2）子进程基于当前内存中的数据，构建日志，开始往一个【新的临时的AOF文件】中写入日志
+
+（3）redis主进程，接收到client新的写操作之后，在【内存】中写入日志，同时新的日志也继续写入【旧的AOF文件】
+
+（4）子进程写完新的日志文件之后，redis主进程将内存中的新日志再次追加到新的AOF文件中
+
+（5）用新的日志文件替换掉旧的日志文件
+    重写期间-> aof_rewrite_buf 缓存区->aof文件
+
+    重启：
+        创建伪客户端【不带网络请求】->读取命令->执行命令
+
+    Redis 目前支持三种 AOF 保存模式，它们分别是：
+    AOF_FSYNC_NO ：不保存。【数据丢失】
+    AOF_FSYNC_EVERYSEC ：每一秒钟保存一次。【最多丢失2秒数据】
+    AOF_FSYNC_ALWAYS ：每执行一个命令保存一次。【性能太差】
+
+
+
+
+3.RDB-->aof
+
+优先使用aof恢复数据。-->数据更全面
+ 
+https://www.cnblogs.com/huochaihe/p/7593708.html
+
+情景一：公司之前的redis没有开启aof模式，一直是rdb模式，但是数据又非常重要，数据一点也不能丢失，所以需要开启aof，但是redis默认是从appendonly.aof加载数据，systemctl start redis的时候，数据库是空的，因为我们并没有appendonly.aof文件，而且关闭redis的时候，会把dump.rdb清空
+
+情景二：redis数据库迁移，我们可以只用dump.rdb文件，因为dump.rdb文件比较小，方便携带
+
+第一步：我们在/etc/redis.conf配置文件中，只开启rdb模式，启动redis，这样数据文件就加载进来了
+
+第二步：使用redis-cli命令，登录redis，执行BGREWRITEAOF命令，重新生成aof文件
+
+第三步：关闭redis，在/etc/redis.conf中开启aof模式
+
+第四步：重新开启redis服务，这时候，redis就会读取appendonly.aof文件，加载完整数据库了

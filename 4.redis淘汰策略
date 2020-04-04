@@ -1,0 +1,16 @@
+一共6种
+
+1.LRU
+    丢弃最近最少使用
+    
+    allkeys-lru  全部中的lru
+    volatile-lru  有过期时间的部分进行lru
+2.random
+    allkeys-random
+    volatile-random 
+
+3.no-eviction
+    不淘汰，写入数据报异常
+
+4.volatile-tt
+    在设置了过期时间的所有键，抛弃存活时间最短的数据。l

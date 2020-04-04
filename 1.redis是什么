@@ -1,0 +1,19 @@
+redis 全程 Remote Dictionary Server
+
+1.C语言编写、开源、基于内存的高性能key-valule数据库
+支持多种数据结构{
+    string
+    hash
+    set
+    list
+    zset-->排行榜
+
+    其他:
+        bitmap-->布隆过滤器
+        geo
+        hyperLogLog
+}
+
+2.高性能
+    基于内存、单线程、IO多路复用
+
