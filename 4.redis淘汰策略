@@ -12,5 +12,5 @@
 3.no-eviction
     不淘汰，写入数据报异常
 
-4.volatile-tt
+4.volatile-ttl
     在设置了过期时间的所有键，抛弃存活时间最短的数据。l
